@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="authBackColor">#1B2B4B</color>
+
+    <color name="colorPrimary">#29395D</color>
+    <color name="colorPrimaryDark">#364B71</color>
+    <color name="colorAccent">#167ADA</color>
+    <color name="secondary_text">#CEEEEEEE</color>
+    <color name="btn_login">#AE23629C</color>
+    <color name="message_hint">#AE0D1114</color>
+    <color name="secondary_text1">#AE0D1114</color>
+    <color name="colorHint">#6FFFFFFF</color>
+</resources>

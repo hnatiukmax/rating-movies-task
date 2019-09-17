@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">RatingMoviesTask</string>
+    <string name="editText_message">Message</string>
+    <string name="editText_send">Message</string>
+    <string name="labelEmail">Email</string>
+    <string name="editText_email">Email</string>
+    <string name="editText_password">Password</string>
+    <string name="textView_btnRegistration">No account yet? <b>Create one.</b></string>
+    <string name="textView_btnLogin">Already a member? <b>Login.</b></string>
+    <string name="create_account">CREATE ACCOUNT</string>
+    <string name="login">LOGIN</string>
+    <string name="editText_repeatPassword">Repeat Password</string>
+    <string name="table">Table</string>
+    <string name="list">List</string>
+
+    <string name="profile_info">Profile Info</string>
+    <string name="logout">Quit</string>
+
+    <string name="nav_open">Navigation open</string>
+    <string name="nav_close">Navigation close</string>
+
+    <string name="textView_email">Email:</string>
+    <string name="textLogo">Movies Rating</string>
+    <string name="textView_popularity">Popularity:</string>
+    <string name="textView_language">Language:</string>
+    <string name="sort_by_date">Sort by Date</string>
+    <string name="sort_by_name">Sort by name</string>
+    <string name="sort_by_popularity">Sort by popularity</string>
+</resources>

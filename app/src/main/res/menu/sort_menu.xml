@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group>
+        <item
+            android:id="@+id/nav_dateSort"
+            android:title="@string/sort_by_date" />
+    </group>
+
+    <group>
+        <item
+            android:id="@+id/nav_popularitySort"
+            android:title="@string/sort_by_popularity" />
+    </group>
+
+    <group>
+        <item
+            android:id="@+id/nav_nameSort"
+            android:title="@string/sort_by_name" />
+    </group>
+
+</menu>
