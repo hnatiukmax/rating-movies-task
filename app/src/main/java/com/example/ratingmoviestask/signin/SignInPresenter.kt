@@ -34,21 +34,21 @@ class SignInPresenter : SignInContract.Presenter {
     }
 
     override fun onLogin() {
-        if (isProfileExist(
-                view?.getContext()!!,
-                Profile(view?.getEmail(), view?.getPassword())
-            )
-        ) {
+        if (isProfileExist(view?.getContext()!!, Profile(view?.getEmail(), view?.getPassword()))) {
             view?.showMessage("Sign in is failed")
         } else {
-            Preferences.getInstance(view?.getContext()!!).setCurrentEmail(view?.getEmail()!!)
-            view?.getContext()?.startActivity(Intent(view?.getContext(), MoviesDashBoardView::class.java))
+            view?.apply {
+                Preferences.getInstance(getContext()).currentEmail = view?.getEmail()!!
+                val intent = Intent(getContext(), MoviesDashBoardView::class.java)
+                toAnotherActivity(intent)
+            }
         }
     }
 
     override fun onToRegistration() {
         view?.apply {
-            getContext().startActivity(Intent(getContext(), SignUpView::class.java))
+            val intent = Intent(getContext(), SignUpView::class.java)
+            toAnotherActivity(intent)
         }
     }
 

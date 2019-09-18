@@ -1,8 +1,10 @@
 package com.example.ratingmoviestask.maindashboard
 
+import androidx.drawerlayout.widget.DrawerLayout
 import com.example.ratingmoviestask.models.Movie
 import com.example.ratingmoviestask.ui.MoviesListAdapter
 import com.example.ratingmoviestask.ui.MoviesTableAdapter
+import com.example.ratingmoviestask.utils.BasicPresenter
 import com.example.ratingmoviestask.utils.BasicView
 
 const val LIST_TYPE = 0
@@ -24,22 +26,22 @@ interface MoviesDashBoardContract {
 
         fun setListType()
 
-        fun setMoviesList(movies : List<Movie>)
+        fun setMoviesList(movies : List<Movie>, typeLayout: Int)
 
         fun updateList()
 
-        fun getAdapterList() : MoviesListAdapter
+        fun setAdapterListMovies(movies : List<Movie>)
 
-        fun getAdapterTable() : MoviesTableAdapter
+        fun setAdapterTableMovies(movies : List<Movie>)
+
+        fun showProgressBar()
+
+        fun hideProgressBar()
     }
 
-    interface Presenter {
+    interface Presenter : BasicPresenter {
 
         fun attachView(view : View)
-
-        fun detachView()
-
-        fun onDestroy()
 
         fun onQuit()
 

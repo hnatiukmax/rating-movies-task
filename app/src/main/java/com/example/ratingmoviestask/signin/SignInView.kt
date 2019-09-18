@@ -1,19 +1,23 @@
 package com.example.ratingmoviestask.signin
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnimationUtils
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import androidx.databinding.DataBindingUtil
 import com.example.ratingmoviestask.R
 import com.example.ratingmoviestask.databinding.ActivitySignInBinding
-import com.example.ratingmoviestask.activities.BasicActivity
+import com.example.ratingmoviestask.utils.blink
 import com.google.android.material.snackbar.Snackbar
 
-class SignInView : BasicActivity(), SignInContract.View, View.OnClickListener {
+@Suppress("DEPRECATION")
+class SignInView : AppCompatActivity(), SignInContract.View, View.OnClickListener {
 
     override fun onClick(view : View) {
-        view.startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
+        view.blink()
 
         when(view.id) {
             R.id.btn_signInLoginAccount -> {
@@ -73,4 +77,10 @@ class SignInView : BasicActivity(), SignInContract.View, View.OnClickListener {
     override fun showMessage(message : String) {
         Snackbar.make(findViewById(R.id.editText_signInEmail), message, Snackbar.LENGTH_LONG).show()
     }
+
+    override fun toAnotherActivity(intent: Intent) {
+        startActivity(intent)
+        finish()
+    }
+
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RatingMoviesTask</string>
+    <string name="app_name">Movies Rating</string>
     <string name="editText_message">Message</string>
     <string name="editText_send">Message</string>
     <string name="labelEmail">Email</string>
@@ -19,11 +19,15 @@
     <string name="nav_open">Navigation open</string>
     <string name="nav_close">Navigation close</string>
 
-    <string name="textView_email">Email:</string>
+    <string name="textView_email"><u>Email</u></string>
     <string name="textLogo">Movies Rating</string>
     <string name="textView_popularity">Popularity:</string>
     <string name="textView_language">Language:</string>
     <string name="sort_by_date">Sort by Date</string>
     <string name="sort_by_name">Sort by name</string>
     <string name="sort_by_popularity">Sort by popularity</string>
+    <string name="textView_oldPassword">Old:</string>
+    <string name="textView_newPassword">New:</string>
+    <string name="btn_changePassword">Change</string>
+    <string name="textView_password"><u>Password</u></string>
 </resources>

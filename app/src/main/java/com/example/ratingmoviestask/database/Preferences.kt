@@ -6,25 +6,19 @@ import android.content.SharedPreferences
 
 const val MY_SETTINGS = "my_settings"
 
-class Preferences {
+class Preferences private constructor(context: Context) {
     companion object {
         private val mInstance : Preferences? = null
 
         fun getInstance(context : Context) = mInstance ?: Preferences(context)
     }
 
-    private lateinit var prefs : SharedPreferences
+    private var prefs = context.getSharedPreferences(MY_SETTINGS, Context.MODE_PRIVATE)
 
-    private constructor(context : Context) {
-        this.prefs = context.getSharedPreferences(MY_SETTINGS, Context.MODE_PRIVATE)
-    }
+    val isSignIn : Boolean
+        get() = prefs.getString("currentEmail", "")!!.isNotEmpty()
 
-    val isSignIn
-        get() = prefs.getString("currentEmail", "").isNotEmpty()
-
-    fun getCurrentEmail() = prefs.getString("currentEmail", "")
-
-    fun setCurrentEmail(email : String) {
-        prefs.edit().putString("currentEmail", email).apply()
-    }
+    var currentEmail: String
+        get() = prefs.getString("currentEmail", "")!!
+        set(email) = prefs.edit().putString("currentEmail", email).apply()
 }

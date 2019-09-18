@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ratingmoviestask.R
 import com.example.ratingmoviestask.activities.MovieDetailActivity
+import com.example.ratingmoviestask.models.Movie
+import com.example.ratingmoviestask.utils.blink
 import com.example.ratingmoviestask.utils.parseDate
 
 
@@ -46,9 +48,21 @@ class MoviesTableAdapter : RecyclerView.Adapter<MoviesTableAdapter.MovieTableHol
             .into(item.poster)
 
         item.itemView.setOnClickListener {
-            it.startAnimation(AnimationUtils.loadAnimation(context, R.anim.blink))
+            val extra = Movie(
+                title = task.title,
+                voteAverage = task.voteAverage,
+                overview = task.overview,
+                posterPath = task.posterPath,
+                popularity = task.popularity,
+                originalLanguage = task.originalLanguage,
+                releaseDate = task.releaseDate,
+                id = task.id,
+                originalTitle = task.originalTitle,
+                voteCount = task.voteCount
+            )
+            it.blink()
             val intent = Intent(context, MovieDetailActivity::class.java)
-            intent.putExtra("selectedMovie", task)
+            intent.putExtra("selectedMovie", extra)
             context.startActivity(intent)
         }
     }

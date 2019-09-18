@@ -25,7 +25,6 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/imageView_back"
-                app:srcCompat="@drawable/ic_exit"
                 tools:ignore="VectorDrawableCompat" />
 
             <TextView

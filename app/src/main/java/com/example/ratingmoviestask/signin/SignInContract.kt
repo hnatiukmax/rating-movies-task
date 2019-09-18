@@ -2,6 +2,7 @@ package com.example.ratingmoviestask.signin
 
 import android.app.Activity
 import android.content.Context
+import com.example.ratingmoviestask.utils.BasicPresenter
 import com.example.ratingmoviestask.utils.BasicView
 
 interface SignInContract {
@@ -14,13 +15,9 @@ interface SignInContract {
 
     }
 
-    interface Presenter {
+    interface Presenter : BasicPresenter {
 
         fun attachView(view : View)
-
-        fun detachView()
-
-        fun onDestroy()
 
         fun onLogin()
 

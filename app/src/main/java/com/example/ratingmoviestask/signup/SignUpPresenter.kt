@@ -6,8 +6,9 @@ import com.example.ratingmoviestask.maindashboard.MoviesDashBoardView
 import com.example.ratingmoviestask.models.Profile
 import com.example.ratingmoviestask.signin.SignInView
 import com.example.ratingmoviestask.database.createProfile
+import com.example.ratingmoviestask.database.isEmailExist
 import com.example.ratingmoviestask.database.isProfileExist
-import com.example.ratingmoviestask.utils.isValidEmail
+import com.example.ratingmoviestask.utils.isProfileValid
 import io.realm.Realm
 
 class SignUpPresenter : SignUpContract.Presenter {
@@ -30,41 +31,36 @@ class SignUpPresenter : SignUpContract.Presenter {
 
 
     override fun onRegistration() {
+        val validResponse = with(view!!) {
+            isProfileValid(getEmail(),getPassword(), getRepeatPassword())
+        }
 
-        if (validProfile()) {
+        if (validResponse.isCorrect) {
             val profile = Profile(
                 view?.getEmail(),
                 view?.getPassword()
             )
 
-            if (!isProfileExist(view?.getContext()!!, profile)) {
+            if (!isEmailExist(view?.getContext()!!, profile)) {
                 view?.showMessage("Profile is already exist")
             } else {
-                createProfile(view?.getContext()!!, profile)
-                Preferences.getInstance(view?.getContext()!!).setCurrentEmail(view?.getEmail()!!)
-                view?.getContext()?.startActivity(Intent(view?.getContext(), MoviesDashBoardView::class.java))
+                view?.apply {
+                    createProfile(getContext(), profile)
+                    Preferences.getInstance(getContext()).currentEmail = view?.getEmail()!!
+                    val intent = Intent(getContext(), MoviesDashBoardView::class.java)
+                    toAnotherActivity(intent)
+                }
             }
+        } else {
+            view?.showMessage(validResponse.messageError)
         }
     }
 
     override fun onToLogin() {
         view?.apply {
-            getContext().startActivity(Intent(getContext(), SignInView::class.java))
+            val intent = Intent(getContext(), SignInView::class.java)
+            toAnotherActivity(intent)
         }
     }
 
-    // validation method
-    private fun validProfile() : Boolean {
-        view?.apply {
-            when {
-                getEmail().isEmpty() -> showMessage("Email field is empty")
-                getPassword().isEmpty() -> showMessage("Password field is empty")
-                getPassword() != getRepeatPassword() -> showMessage("Passwords don't match")
-                getPassword().length !in 4..20 -> showMessage("Password is too short")
-                !isValidEmail(getEmail()) -> showMessage("Email is not valid")
-                else -> return true
-            }
-        }
-        return false
-    }
 }

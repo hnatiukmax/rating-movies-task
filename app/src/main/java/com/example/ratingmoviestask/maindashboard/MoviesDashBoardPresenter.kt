@@ -1,41 +1,46 @@
 package com.example.ratingmoviestask.maindashboard
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import com.example.ratingmoviestask.activities.ProfileActivity
+import com.example.ratingmoviestask.profileinfo.ProfileView
 import com.example.ratingmoviestask.app.MyApplication
 import com.example.ratingmoviestask.database.Preferences
+import com.example.ratingmoviestask.database.getLocalMovies
+import com.example.ratingmoviestask.database.saveMoviesToRealm
 import com.example.ratingmoviestask.models.Movie
 import com.example.ratingmoviestask.network.NetworkService
 import com.example.ratingmoviestask.signin.SignInView
+import com.example.ratingmoviestask.utils.isInternetOn
 import com.example.ratingmoviestask.utils.log
 import com.example.ratingmoviestask.utils.showMovies
-import io.reactivex.Completable
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.util.*
 
 class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
 
     private var view: MoviesDashBoardContract.View? = null
     private var disposable: CompositeDisposable? = null
     private var movies: List<Movie>? = null
+    private var typeLayout = LIST_TYPE
 
     override fun attachView(view: MoviesDashBoardContract.View) {
         this.view = view
 
         disposable = CompositeDisposable()
 
+        if (typeLayout == TABLE_TYPE) {
+            this.view?.setTableType()
+        } else {
+            this.view?.setListType()
+        }
+
         MyApplication.instance.currentList.apply {
             if (this.isNullOrEmpty()) {
                 loadMovies()
             } else {
                 movies = this
-                view.setMoviesList(this)
+                view.setMoviesList(this, typeLayout)
                 view.updateList()
             }
         }
@@ -50,25 +55,31 @@ class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
     }
 
     override fun onQuit() {
-        view?.getContext()?.apply {
-            Preferences.getInstance(this).setCurrentEmail("")
-            val intent = Intent(this, SignInView::class.java)
-            startActivity(intent)
+        view?.apply {
+            Preferences.getInstance(getContext()).currentEmail = ""
+            val intent = Intent(getContext(), SignInView::class.java)
+            toAnotherActivity(intent)
         }
     }
 
     override fun onProfileInfo() {
         view?.apply {
-            val intent = Intent(getContext(), ProfileActivity::class.java)
-            intent.putExtra("email", Preferences.getInstance(getContext()).getCurrentEmail())
-            getContext().startActivity(intent)
+            val intent = Intent(getContext(), ProfileView::class.java)
+            intent.putExtra("email", Preferences.getInstance(getContext()).currentEmail)
+            toAnotherActivity(intent)
         }
     }
 
     override fun onBottomItemSelected(type: Int) {
         when (type) {
-            LIST_TYPE -> view?.setListType()
-            TABLE_TYPE -> view?.setTableType()
+            LIST_TYPE -> {
+                view?.setListType()
+                typeLayout = LIST_TYPE
+            }
+            TABLE_TYPE -> {
+                view?.setTableType()
+                typeLayout = TABLE_TYPE
+            }
         }
     }
 
@@ -78,18 +89,17 @@ class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
                 movies?.sortedWith(compareBy { it.releaseDate })!!.reversed()
             }
             SortType.POPULARITY -> {
-                movies?.sortedWith(compareBy { it.popularity })!!.reversed()
+                movies?.sortedWith(compareBy { it.voteAverage })!!.reversed()
             }
             else -> {
                 movies?.sortedWith(compareBy { it.title })!!
             }
         }
         view?.apply {
-            getAdapterList().movies = sortedMovies
-            getAdapterTable().movies = sortedMovies
+            setAdapterListMovies(sortedMovies)
+            setAdapterTableMovies(sortedMovies)
         }
 
-        MyApplication.instance.currentList = sortedMovies
         view?.updateList()
     }
 
@@ -99,36 +109,49 @@ class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
 
     @SuppressLint("CheckResult")
     private fun loadMovies() {
-        isInternetOn()
+        //check the internet
+        disposable?.add(isInternetOn(view?.getContext()!!)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { isInternet ->
                 if (isInternet) {
+                    view?.showProgressBar()
+                    // if internet exists
                     disposable?.add(NetworkService.getInstance().getTaskApi().getMovies()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                             { result ->
+                                if (result.filmList != getLocalMovies(view?.getContext()!!)) {
+                                    saveMoviesToRealm(view?.getContext()!!, result.filmList)
+                                }
                                 movies = result.filmList
-                                view?.setMoviesList(result.filmList)
-                                view?.updateList()
                                 MyApplication.instance.currentList = result.filmList
+                                view?.apply {
+                                    setMoviesList(result.filmList, typeLayout)
+                                    updateList()
+                                    hideProgressBar()
+                                }
                             },
                             {
-                                view?.showMessage("${it.localizedMessage} Error loading")
+                                log("error loading",it.localizedMessage)
                             }
                         )
                     )
-                } else {
-                   view?.showMessage("Internet is unavailable")
-                }
-            }
-    }
 
-    private fun isInternetOn(): Single<Boolean> {
-        val connectivityManager =
-            view?.getContext()?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo = connectivityManager.activeNetworkInfo
-        return Single.just(activeNetworkInfo != null && activeNetworkInfo.isConnected)
+                } else {
+                    view?.apply {
+                        showProgressBar()
+                        showMessage("Internet is unavailable")
+
+                        movies = getLocalMovies(getContext())
+
+                        MyApplication.instance.currentList = movies
+                        setMoviesList(movies!!, typeLayout)
+                        updateList()
+                        hideProgressBar()
+                    }
+                }
+            })
     }
 }

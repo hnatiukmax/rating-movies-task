@@ -2,6 +2,7 @@ package com.example.ratingmoviestask.maindashboard
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -19,21 +20,22 @@ import com.example.ratingmoviestask.databinding.ActivityMoviesDashBoardViewBindi
 import com.example.ratingmoviestask.models.Movie
 import com.example.ratingmoviestask.ui.MoviesListAdapter
 import com.example.ratingmoviestask.ui.MoviesTableAdapter
+import com.example.ratingmoviestask.utils.blink
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.toolbar.view.*
 
+@Suppress("DEPRECATION")
 class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, View.OnClickListener {
 
-    private lateinit var recycler : RecyclerView
     private var adapterList : MoviesListAdapter? = null
     private var adapterTable : MoviesTableAdapter? = null
     private var presenter : MoviesDashBoardContract.Presenter? = null
     private lateinit var binding : ActivityMoviesDashBoardViewBinding
 
     override fun onClick(view : View) {
-        view.startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
+        view.blink()
 
         when (view.id) {
             R.id.menu_sort -> {
@@ -69,6 +71,19 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         return@OnNavigationItemSelectedListener true
     }
 
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            when (newState) {
+                1,2  -> {
+                    binding.bottomNavigation.animate().alpha(-0.2f)
+                }
+                0 -> {
+                    binding.bottomNavigation.animate().alpha(1.2f)
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movies_dash_board_view)
@@ -86,9 +101,6 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
-        recycler = findViewById(R.id.recyclerView_data)
-        recycler.layoutManager = LinearLayoutManager(this)
-
         initUI()
         attachPresenter()
     }
@@ -98,6 +110,8 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         binding.nv.setNavigationItemSelectedListener(menuItemSelected)
         binding.toolbar.menu_sort.setOnClickListener(this)
         binding.toolbar.imageView_update.setOnClickListener(this)
+        binding.recyclerViewData.addOnScrollListener(scrollListener)
+        binding.toolbar.progressBar.visibility = View.INVISIBLE
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -116,6 +130,7 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
 
     override fun onDestroy() {
         presenter?.detachView()
+        presenter = null
         super.onDestroy()
     }
 
@@ -132,24 +147,23 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
     }
 
     override fun loadAgain(movies : List<Movie>) {
-        recycler.startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
+        binding.recyclerViewData.startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
         adapterList?.apply {
             this.movies = movies
-            recycler.adapter = this
+            binding.recyclerViewData.adapter = this
             notifyDataSetChanged()
         }
     }
 
     override fun setTableType() {
-        recycler.layoutManager = GridLayoutManager(this, 3)
-        recycler.adapter = adapterTable
+        binding.recyclerViewData.layoutManager = GridLayoutManager(this, 3)
+        binding.recyclerViewData.adapter = adapterTable
         adapterTable?.notifyDataSetChanged()
     }
 
     override fun setListType() {
-        recycler.layoutManager = LinearLayoutManager(this)
-        recycler.layoutManager = LinearLayoutManager(this)
-        recycler.adapter = adapterList
+        binding.recyclerViewData.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewData.adapter = adapterList
         adapterList?.notifyDataSetChanged()
     }
 
@@ -157,10 +171,13 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         return this
     }
 
-    override fun setMoviesList(movies: List<Movie>) {
+    override fun setMoviesList(movies: List<Movie>, typeLayout: Int) {
         adapterList = MoviesListAdapter(this, movies)
         adapterTable = MoviesTableAdapter(this, movies)
-        recycler.adapter = adapterList
+        binding.recyclerViewData.adapter = when(typeLayout) {
+            LIST_TYPE -> adapterList
+            else -> adapterTable
+        }
     }
 
     override fun updateList() {
@@ -168,12 +185,17 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         adapterTable?.notifyDataSetChanged()
     }
 
-    override fun getAdapterList(): MoviesListAdapter {
-        return adapterList!!
+    override fun setAdapterListMovies(movies : List<Movie>) {
+        adapterList?.movies = movies
     }
 
-    override fun getAdapterTable(): MoviesTableAdapter {
-        return adapterTable!!
+    override fun setAdapterTableMovies(movies : List<Movie>) {
+        adapterTable?.movies = movies
+    }
+
+    override fun toAnotherActivity(intent: Intent) {
+        startActivity(intent)
+        finish()
     }
 
     private fun buildDialog() : AlertDialog {
@@ -193,5 +215,13 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
 
         builder.setCancelable(true)
         return builder.create()
+    }
+
+    override fun showProgressBar() {
+        binding.toolbar.progressBar?.visibility = View.VISIBLE
+    }
+
+    override fun hideProgressBar() {
+        binding.toolbar.progressBar?.visibility = View.INVISIBLE
     }
 }

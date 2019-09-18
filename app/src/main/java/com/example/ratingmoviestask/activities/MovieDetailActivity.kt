@@ -11,16 +11,19 @@ import com.example.ratingmoviestask.databinding.ActivityMovieDetailBinding
 import com.example.ratingmoviestask.maindashboard.MoviesDashBoardView
 import com.example.ratingmoviestask.models.Movie
 import com.example.ratingmoviestask.network.picturesURLPoint
+import com.example.ratingmoviestask.utils.blink
 import com.example.ratingmoviestask.utils.parseDate
 import java.util.*
 
 class MovieDetailActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(view : View) {
+        view.blink()
         when (view.id) {
             R.id.imageView_back -> {
                 val intentBack = Intent(this, MoviesDashBoardView::class.java)
                 startActivity(intentBack)
+                finish()
             }
         }
     }
