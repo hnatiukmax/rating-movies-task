@@ -1,6 +1,7 @@
 package com.example.ratingmoviestask.signup
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -44,8 +45,8 @@ class SignUpView : AppCompatActivity(), SignUpContract.View, View.OnClickListene
     }
 
 
-    override fun getContext(): Activity {
-        return this
+    override fun getContext(): Context {
+        return this.baseContext
     }
 
     private fun attachPresenter() {

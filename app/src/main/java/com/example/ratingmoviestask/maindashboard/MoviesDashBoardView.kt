@@ -114,12 +114,6 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         binding.toolbar.progressBar.visibility = View.INVISIBLE
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater = menuInflater
-        inflater.inflate(R.menu.sort_menu, menu)
-        return true
-    }
-
     private fun attachPresenter() {
         presenter = lastCustomNonConfigurationInstance as MoviesDashBoardContract.Presenter?
         if (presenter == null) {

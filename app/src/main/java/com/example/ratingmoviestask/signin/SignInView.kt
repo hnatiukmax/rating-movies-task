@@ -1,6 +1,7 @@
 package com.example.ratingmoviestask.signin
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -45,8 +46,8 @@ class SignInView : AppCompatActivity(), SignInContract.View, View.OnClickListene
         binding.textViewToSignUpActivity.setOnClickListener(this)
     }
 
-    override fun getContext(): Activity {
-        return this
+    override fun getContext(): Context {
+        return this.baseContext
     }
 
     private fun attachPresenter() {

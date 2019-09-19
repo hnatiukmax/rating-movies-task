@@ -1,6 +1,7 @@
 package com.example.ratingmoviestask.profileinfo
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -78,8 +79,8 @@ class ProfileView : AppCompatActivity(), View.OnClickListener, ProfileContract.V
         Snackbar.make(binding?.textViewEmail!!, message, Snackbar.LENGTH_LONG).show()
     }
 
-    override fun getContext(): Activity {
-        return this
+    override fun getContext(): Context {
+        return this.baseContext
     }
 
     override fun toAnotherActivity(intent: Intent) {

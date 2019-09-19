@@ -18,7 +18,7 @@ class SignInPresenter : SignInContract.Presenter {
         if (Preferences.getInstance(view.getContext()).isSignIn) {
             view.apply {
                 val intent = Intent(getContext(), MoviesDashBoardView::class.java)
-                getContext().startActivity(intent)
+                toAnotherActivity(intent)
             }
         }
     }
