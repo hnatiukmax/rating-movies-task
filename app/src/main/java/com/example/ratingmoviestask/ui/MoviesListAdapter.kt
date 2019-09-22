@@ -5,7 +5,6 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
@@ -14,8 +13,7 @@ import com.bumptech.glide.Glide
 import com.example.ratingmoviestask.R
 import com.example.ratingmoviestask.activities.MovieDetailActivity
 import com.example.ratingmoviestask.models.Movie
-import com.example.ratingmoviestask.models.MoviesList
-import com.example.ratingmoviestask.network.picturesURLPoint
+import com.example.ratingmoviestask.network.PICTURES_URL_ENDPOINT
 import com.example.ratingmoviestask.utils.blink
 import com.example.ratingmoviestask.utils.parseDate
 
@@ -24,9 +22,9 @@ class MoviesListAdapter : RecyclerView.Adapter<MoviesListAdapter.MovieListHolder
     private var context : Context
     var movies : List<Movie>
 
-    constructor(context : Context, tasks : List<Movie>) : super() {
+    constructor(context : Context, movies : List<Movie>) : super() {
         this.context = context
-        this.movies = tasks
+        this.movies = movies
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): MovieListHolder {
@@ -52,7 +50,7 @@ class MoviesListAdapter : RecyclerView.Adapter<MoviesListAdapter.MovieListHolder
 
         Glide
             .with(context)
-            .load("${picturesURLPoint}${task.posterPath}")
+            .load("${PICTURES_URL_ENDPOINT}${task.posterPath}")
             .into(item.poster)
 
 

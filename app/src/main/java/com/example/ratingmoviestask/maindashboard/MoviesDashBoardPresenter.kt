@@ -8,6 +8,7 @@ import com.example.ratingmoviestask.database.Preferences
 import com.example.ratingmoviestask.database.getLocalMovies
 import com.example.ratingmoviestask.database.saveMoviesToRealm
 import com.example.ratingmoviestask.models.Movie
+import com.example.ratingmoviestask.models.MoviesList
 import com.example.ratingmoviestask.network.NetworkService
 import com.example.ratingmoviestask.signin.SignInView
 import com.example.ratingmoviestask.utils.isInternetOn
@@ -22,26 +23,20 @@ class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
     private var view: MoviesDashBoardContract.View? = null
     private var disposable: CompositeDisposable? = null
     private var movies: List<Movie>? = null
-    private var typeLayout = LIST_TYPE
+    private var currentTypeSort = SortType.NONE
 
     override fun attachView(view: MoviesDashBoardContract.View) {
         this.view = view
 
         disposable = CompositeDisposable()
 
-        if (typeLayout == TABLE_TYPE) {
-            this.view?.setTableType()
-        } else {
-            this.view?.setListType()
-        }
-
         MyApplication.instance.currentList.apply {
             if (this.isNullOrEmpty()) {
                 loadMovies()
             } else {
                 movies = this
-                view.setMoviesList(this, typeLayout)
-                view.updateList()
+                view.initFragments(getSortMovies(currentTypeSort, this))
+                view.updateFragments()
             }
         }
     }
@@ -70,37 +65,14 @@ class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
         }
     }
 
-    override fun onBottomItemSelected(type: Int) {
-        when (type) {
-            LIST_TYPE -> {
-                view?.setListType()
-                typeLayout = LIST_TYPE
-            }
-            TABLE_TYPE -> {
-                view?.setTableType()
-                typeLayout = TABLE_TYPE
-            }
-        }
-    }
-
     override fun onSortList(sortType: SortType) {
-        val sortedMovies = when (sortType) {
-            SortType.DATE -> {
-                movies?.sortedWith(compareBy { it.releaseDate })!!.reversed()
-            }
-            SortType.POPULARITY -> {
-                movies?.sortedWith(compareBy { it.voteAverage })!!.reversed()
-            }
-            else -> {
-                movies?.sortedWith(compareBy { it.title })!!
-            }
-        }
+        currentTypeSort = sortType
+        val sortedMovies = getSortMovies(sortType, movies!!)
+        MyApplication.instance.currentList = sortedMovies
         view?.apply {
-            setAdapterListMovies(sortedMovies)
-            setAdapterTableMovies(sortedMovies)
+            setFragmentsMovies(sortedMovies)
+            updateFragments()
         }
-
-        view?.updateList()
     }
 
     override fun onUpdate() {
@@ -109,49 +81,78 @@ class MoviesDashBoardPresenter : MoviesDashBoardContract.Presenter {
 
     @SuppressLint("CheckResult")
     private fun loadMovies() {
+        view?.showProgress()
         //check the internet
         disposable?.add(isInternetOn(view?.getContext()!!)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { isInternet ->
                 if (isInternet) {
-                    view?.showProgressBar()
                     // if internet exists
                     disposable?.add(NetworkService.getInstance().getTaskApi().getMovies()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                            { result ->
-                                if (result.filmList != getLocalMovies(view?.getContext()!!)) {
-                                    saveMoviesToRealm(view?.getContext()!!, result.filmList)
-                                }
-                                movies = result.filmList
-                                MyApplication.instance.currentList = result.filmList
-                                view?.apply {
-                                    setMoviesList(result.filmList, typeLayout)
-                                    updateList()
-                                    hideProgressBar()
-                                }
-                            },
+                            callbackInternetSuccess,
                             {
                                 log("error loading",it.localizedMessage)
                             }
                         )
                     )
-
                 } else {
                     view?.apply {
-                        showProgressBar()
                         showMessage("Internet is unavailable")
 
-                        movies = getLocalMovies(getContext())
+                        if (MyApplication.instance.currentList.isNullOrEmpty()) {
+                            val result = getLocalMovies(getContext())
+                            if (result.isNullOrEmpty()) {
+                                showNoResult()
+                            } else {
+                                movies = getSortMovies(currentTypeSort, result)
 
-                        MyApplication.instance.currentList = movies
-                        setMoviesList(movies!!, typeLayout)
-                        updateList()
-                        hideProgressBar()
+                                MyApplication.instance.currentList = movies
+                                initFragments(movies!!)
+                                updateFragments()
+                            }
+                        }
+                        hideProgress()
                     }
                 }
             })
+    }
+
+    private val callbackInternetSuccess = fun(result : MoviesList) {
+        view?.hideNoResult()
+
+        // save to local base, if movies are different
+        if (result.filmList != getLocalMovies(view?.getContext()!!)) {
+            saveMoviesToRealm(view?.getContext()!!, result.filmList)
+        }
+
+        // first load
+        if (MyApplication.instance.currentList.isNullOrEmpty()) {
+            movies = result.filmList
+            MyApplication.instance.currentList = movies
+            view?.apply {
+                initFragments(movies!!)
+                updateFragments()
+            }
+        } else {
+            movies = getSortMovies(list = result.filmList, sortType = currentTypeSort)
+            MyApplication.instance.currentList = movies
+            view?.apply {
+                setFragmentsMovies(movies!!)
+                updateFragments()
+            }
+        }
+
+        view?.hideProgress()
+    }
+
+    private fun getSortMovies(sortType: SortType, list : List<Movie>) : List<Movie> = when (sortType) {
+        SortType.NONE -> list
+        SortType.DATE -> list.sortedWith(compareBy { it.releaseDate }).reversed()
+        SortType.POPULARITY -> list.sortedWith(compareBy { it.voteAverage }).reversed()
+        else -> list.sortedWith(compareBy { it.title })
     }
 }

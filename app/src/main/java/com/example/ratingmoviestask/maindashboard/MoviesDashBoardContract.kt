@@ -13,30 +13,27 @@ const val TABLE_TYPE = 1
 enum class SortType {
     DATE,
     POPULARITY,
-    NAME
+    NAME,
+    NONE
 }
 
 interface MoviesDashBoardContract {
 
     interface View : BasicView {
 
-        fun loadAgain(movies : List<Movie>)
+        fun initFragments(movies : List<Movie>)
 
-        fun setTableType()
+        fun setFragmentsMovies(movies : List<Movie>)
 
-        fun setListType()
+        fun updateFragments()
 
-        fun setMoviesList(movies : List<Movie>, typeLayout: Int)
+        fun showProgress()
 
-        fun updateList()
+        fun hideProgress()
 
-        fun setAdapterListMovies(movies : List<Movie>)
+        fun showNoResult()
 
-        fun setAdapterTableMovies(movies : List<Movie>)
-
-        fun showProgressBar()
-
-        fun hideProgressBar()
+        fun hideNoResult()
     }
 
     interface Presenter : BasicPresenter {
@@ -46,8 +43,6 @@ interface MoviesDashBoardContract {
         fun onQuit()
 
         fun onProfileInfo()
-
-        fun onBottomItemSelected(type : Int)
 
         fun onSortList(sortType : SortType)
 

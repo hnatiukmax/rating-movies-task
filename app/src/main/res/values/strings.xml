@@ -30,4 +30,5 @@
     <string name="textView_newPassword">New:</string>
     <string name="btn_changePassword">Change</string>
     <string name="textView_password"><u>Password</u></string>
+    <string name="textView_noResult">No result</string>
 </resources>

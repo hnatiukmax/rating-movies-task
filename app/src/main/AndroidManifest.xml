@@ -16,7 +16,8 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".profileinfo.ProfileView"></activity>
         <activity android:name=".activities.MovieDetailActivity" />
-        <activity android:name=".maindashboard.MoviesDashBoardView">
+        <activity android:name=".maindashboard.MoviesDashBoardView"
+            android:screenOrientation="portrait">
         </activity>
         <activity android:name=".signup.SignUpView" />
         <activity android:name=".signin.SignInView">

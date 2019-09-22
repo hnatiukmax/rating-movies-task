@@ -15,47 +15,42 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.ratingmoviestask.R
 import com.example.ratingmoviestask.databinding.ActivityMoviesDashBoardViewBinding
 import com.example.ratingmoviestask.models.Movie
+import com.example.ratingmoviestask.ui.ContentPageAdapter
 import com.example.ratingmoviestask.ui.MoviesListAdapter
 import com.example.ratingmoviestask.ui.MoviesTableAdapter
 import com.example.ratingmoviestask.utils.blink
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_movies_dash_board_view.*
+import kotlinx.android.synthetic.main.activity_movies_dash_board_view.view.*
 import kotlinx.android.synthetic.main.toolbar.view.*
 
 @Suppress("DEPRECATION")
 class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, View.OnClickListener {
 
-    private var adapterList : MoviesListAdapter? = null
-    private var adapterTable : MoviesTableAdapter? = null
     private var presenter : MoviesDashBoardContract.Presenter? = null
     private lateinit var binding : ActivityMoviesDashBoardViewBinding
+    private var pagerAdapter : ContentPageAdapter? = null
 
     override fun onClick(view : View) {
         view.blink()
 
-        when (view.id) {
-            R.id.menu_sort -> {
-                buildDialog().show()
-            }
-            R.id.imageView_update -> {
-                presenter?.onUpdate()
+        if (!binding.widgetUpdate!!.isRefreshing) {
+            when (view.id) {
+                R.id.menu_sort -> {
+                    buildDialog().show()
+                }
             }
         }
     }
 
-    private val bottomNavigationListener =
-        BottomNavigationView.OnNavigationItemSelectedListener {
-
-        when (it.itemId) {
-            R.id.action_list -> presenter?.onBottomItemSelected(LIST_TYPE)
-            R.id.action_table -> presenter?.onBottomItemSelected(TABLE_TYPE)
-        }
-
-        return@OnNavigationItemSelectedListener true
+    private val refreshListener = SwipeRefreshLayout.OnRefreshListener {
+        presenter?.onUpdate()
     }
 
     private val menuItemSelected = NavigationView.OnNavigationItemSelectedListener {
@@ -69,19 +64,6 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         }
 
         return@OnNavigationItemSelectedListener true
-    }
-
-    private val scrollListener = object : RecyclerView.OnScrollListener() {
-        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            when (newState) {
-                1,2  -> {
-                    binding.bottomNavigation.animate().alpha(-0.2f)
-                }
-                0 -> {
-                    binding.bottomNavigation.animate().alpha(1.2f)
-                }
-            }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,12 +88,15 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
     }
 
     private fun initUI() {
-        binding.bottomNavigation.setOnNavigationItemSelectedListener(bottomNavigationListener)
+        binding.toolbar.tabLayout.apply {
+            removeAllTabs()
+            addTab(newTab().setText("List"))
+            addTab(newTab().setText("Table"))
+        }
+
         binding.nv.setNavigationItemSelectedListener(menuItemSelected)
         binding.toolbar.menu_sort.setOnClickListener(this)
-        binding.toolbar.imageView_update.setOnClickListener(this)
-        binding.recyclerViewData.addOnScrollListener(scrollListener)
-        binding.toolbar.progressBar.visibility = View.INVISIBLE
+        binding.widgetUpdate?.setOnRefreshListener(refreshListener)
     }
 
     private fun attachPresenter() {
@@ -140,51 +125,24 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         Snackbar.make(findViewById(R.id.toolbar), message, Snackbar.LENGTH_LONG).show()
     }
 
-    override fun loadAgain(movies : List<Movie>) {
-        binding.recyclerViewData.startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
-        adapterList?.apply {
-            this.movies = movies
-            binding.recyclerViewData.adapter = this
-            notifyDataSetChanged()
-        }
-    }
-
-    override fun setTableType() {
-        binding.recyclerViewData.layoutManager = GridLayoutManager(this, 3)
-        binding.recyclerViewData.adapter = adapterTable
-        adapterTable?.notifyDataSetChanged()
-    }
-
-    override fun setListType() {
-        binding.recyclerViewData.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewData.adapter = adapterList
-        adapterList?.notifyDataSetChanged()
-    }
-
     override fun getContext(): Activity {
         return this
     }
 
-    override fun setMoviesList(movies: List<Movie>, typeLayout: Int) {
-        adapterList = MoviesListAdapter(this, movies)
-        adapterTable = MoviesTableAdapter(this, movies)
-        binding.recyclerViewData.adapter = when(typeLayout) {
-            LIST_TYPE -> adapterList
-            else -> adapterTable
+    override fun initFragments(movies: List<Movie>) {
+        pagerAdapter = ContentPageAdapter(supportFragmentManager, movies)
+        binding.apply {
+            viewPager?.adapter = pagerAdapter
+            toolbar?.tabLayout?.setupWithViewPager(viewPager!!)
         }
     }
 
-    override fun updateList() {
-        adapterList?.notifyDataSetChanged()
-        adapterTable?.notifyDataSetChanged()
+    override fun updateFragments() {
+        pagerAdapter?.updateFragments()
     }
 
-    override fun setAdapterListMovies(movies : List<Movie>) {
-        adapterList?.movies = movies
-    }
-
-    override fun setAdapterTableMovies(movies : List<Movie>) {
-        adapterTable?.movies = movies
+    override fun setFragmentsMovies(movies : List<Movie>) {
+        pagerAdapter?.setFragmentsMovies(movies)
     }
 
     override fun toAnotherActivity(intent: Intent) {
@@ -211,11 +169,21 @@ class MoviesDashBoardView : AppCompatActivity(), MoviesDashBoardContract.View, V
         return builder.create()
     }
 
-    override fun showProgressBar() {
-        binding.toolbar.progressBar?.visibility = View.VISIBLE
+    override fun showProgress() {
+        binding.widgetUpdate?.isRefreshing = true
     }
 
-    override fun hideProgressBar() {
-        binding.toolbar.progressBar?.visibility = View.INVISIBLE
+    override fun hideProgress() {
+        binding.widgetUpdate?.isRefreshing = false
+    }
+
+    override fun showNoResult() {
+        binding.widgetUpdate?.viewPager?.visibility = View.INVISIBLE
+        binding.textViewNoResult?.visibility = View.VISIBLE
+    }
+
+    override fun hideNoResult() {
+        binding.widgetUpdate?.viewPager?.visibility = View.VISIBLE
+        binding.textViewNoResult?.visibility = View.INVISIBLE
     }
 }

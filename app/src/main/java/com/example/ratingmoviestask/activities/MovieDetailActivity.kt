@@ -10,7 +10,7 @@ import com.example.ratingmoviestask.R
 import com.example.ratingmoviestask.databinding.ActivityMovieDetailBinding
 import com.example.ratingmoviestask.maindashboard.MoviesDashBoardView
 import com.example.ratingmoviestask.models.Movie
-import com.example.ratingmoviestask.network.picturesURLPoint
+import com.example.ratingmoviestask.network.PICTURES_URL_ENDPOINT
 import com.example.ratingmoviestask.utils.blink
 import com.example.ratingmoviestask.utils.parseDate
 import java.util.*
@@ -56,7 +56,7 @@ class MovieDetailActivity : AppCompatActivity(), View.OnClickListener {
 
         Glide
             .with(this)
-            .load("${picturesURLPoint}${selectedMovie.posterPath}")
+            .load("${PICTURES_URL_ENDPOINT}${selectedMovie.posterPath}")
             .into(binding?.imageViewPoster!!)
     }
 }

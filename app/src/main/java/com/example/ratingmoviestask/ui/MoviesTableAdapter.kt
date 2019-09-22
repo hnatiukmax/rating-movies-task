@@ -5,7 +5,6 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -20,11 +19,11 @@ import com.example.ratingmoviestask.utils.parseDate
 class MoviesTableAdapter : RecyclerView.Adapter<MoviesTableAdapter.MovieTableHolder> {
 
     private var context : Context
-    var movies : List<com.example.ratingmoviestask.models.Movie>
+    var movies : List<Movie>
 
-    constructor(context : Context, tasks : List<com.example.ratingmoviestask.models.Movie>) : super() {
+    constructor(context : Context, movies : List<Movie>) : super() {
         this.context = context
-        this.movies = tasks
+        this.movies = movies
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): MovieTableHolder {
